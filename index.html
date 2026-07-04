@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>BUDGET</title>
+  <meta name="theme-color" content="#f2f2f7">
+
+  <!-- PWA / installation iPhone -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="BUDGET">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!-- ============ VUE : LISTE DES PROJETS ============ -->
+  <section id="view-projects" class="view">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <h1 class="topbar-title">Budget</h1>
+      </div>
+    </header>
+    <main class="content">
+      <div id="projects-list" class="projects-list"></div>
+      <div id="projects-empty" class="empty hidden">
+        <div class="empty-emoji">🏖️</div>
+        <p class="empty-title">Aucun projet</p>
+        <p class="empty-sub">Crée ton premier budget de vacances en appuyant sur&nbsp;+</p>
+      </div>
+    </main>
+    <button class="fab" id="btn-add-project" aria-label="Nouveau projet">
+      <svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </section>
+
+  <!-- ============ VUE : DÉTAIL D'UN PROJET ============ -->
+  <section id="view-detail" class="view hidden">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <button class="topbar-btn back" id="btn-back">
+          <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          <span>Projets</span>
+        </button>
+        <button class="topbar-btn edit" id="btn-edit-project">Modifier</button>
+      </div>
+    </header>
+    <main class="content">
+      <div class="summary-card" id="summary-card">
+        <p class="summary-project" id="detail-name">—</p>
+        <p class="summary-label">Il te reste</p>
+        <p class="summary-remaining" id="detail-remaining">0&nbsp;€</p>
+        <div class="progress"><div class="progress-fill" id="detail-progress"></div></div>
+        <div class="summary-row">
+          <div class="summary-stat">
+            <span class="stat-value" id="detail-spent">0&nbsp;€</span>
+            <span class="stat-key">Dépensé</span>
+          </div>
+          <div class="summary-stat right">
+            <span class="stat-value" id="detail-budget">0&nbsp;€</span>
+            <span class="stat-key">Budget</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ministats">
+        <div class="ministat">
+          <span class="ministat-value" id="stat-perday-spent">—</span>
+          <span class="ministat-key">Dépensé / jour</span>
+        </div>
+        <div class="ministat">
+          <span class="ministat-value" id="stat-perday-left">—</span>
+          <span class="ministat-key">Reste / jour restant</span>
+        </div>
+        <div class="ministat">
+          <span class="ministat-value" id="stat-days">—</span>
+          <span class="ministat-key">Jours restants</span>
+        </div>
+      </div>
+
+      <div class="list-head">
+        <h2 class="section-title">Dépenses</h2>
+        <span class="list-count" id="expenses-count"></span>
+      </div>
+      <div id="expenses-list" class="expenses-list"></div>
+      <div id="expenses-empty" class="empty small hidden">
+        <div class="empty-emoji">🧾</div>
+        <p class="empty-sub">Aucune dépense pour l'instant.<br>Appuie sur&nbsp;+ pour en ajouter une.</p>
+      </div>
+    </main>
+    <button class="fab" id="btn-add-expense" aria-label="Nouvelle dépense">
+      <svg viewBox="0 0 24 24" width="30" height="30"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+    </button>
+  </section>
+
+  <!-- ============ FEUILLE : FORMULAIRE PROJET ============ -->
+  <div class="sheet-backdrop hidden" id="sheet-project">
+    <div class="sheet">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head">
+        <button class="sheet-cancel" data-close="sheet-project">Annuler</button>
+        <h3 class="sheet-title" id="project-sheet-title">Nouveau projet</h3>
+        <button class="sheet-save" id="save-project">OK</button>
+      </div>
+      <div class="sheet-body">
+        <label class="field">
+          <span class="field-label">Nom du projet</span>
+          <input type="text" id="project-name" placeholder="Ex : Hossegor entre potes" autocomplete="off" enterkeyhint="next">
+        </label>
+        <label class="field">
+          <span class="field-label">Budget max (€)</span>
+          <input type="text" inputmode="decimal" id="project-budget" placeholder="600" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-label">Date de début</span>
+          <input type="date" id="project-start">
+        </label>
+        <label class="field">
+          <span class="field-label">Durée (jours)</span>
+          <input type="number" inputmode="numeric" id="project-days" placeholder="7" min="1" step="1">
+        </label>
+        <button class="btn-danger hidden" id="delete-project">Supprimer ce projet</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FEUILLE : FORMULAIRE DÉPENSE ============ -->
+  <div class="sheet-backdrop hidden" id="sheet-expense">
+    <div class="sheet">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head">
+        <button class="sheet-cancel" data-close="sheet-expense">Annuler</button>
+        <h3 class="sheet-title" id="expense-sheet-title">Nouvelle dépense</h3>
+        <button class="sheet-save" id="save-expense">OK</button>
+      </div>
+      <div class="sheet-body">
+        <div class="amount-field">
+          <input type="text" inputmode="decimal" id="expense-amount" placeholder="0" autocomplete="off">
+          <span class="amount-currency">€</span>
+        </div>
+        <label class="field">
+          <span class="field-label">Nom</span>
+          <input type="text" id="expense-name" placeholder="Ex : tabac, courses…" autocomplete="off">
+        </label>
+        <label class="field">
+          <span class="field-label">Commentaire (optionnel)</span>
+          <input type="text" id="expense-comment" placeholder="Une note…" autocomplete="off">
+        </label>
+        <button class="btn-danger hidden" id="delete-expense">Supprimer cette dépense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONFIRMATION ============ -->
+  <div class="sheet-backdrop hidden" id="confirm">
+    <div class="confirm-box">
+      <p class="confirm-text" id="confirm-text">Confirmer ?</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel" id="confirm-cancel">Annuler</button>
+        <button class="confirm-ok" id="confirm-ok">Supprimer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
